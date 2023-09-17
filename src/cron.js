@@ -15,7 +15,7 @@ module.exports.runCron = () => {
     }
     while (stack.length) {
       const action = stack.pop();
-      const err = await notify({chatId: CHAT_ID, title: action.title, body: action.msg});
+      const err = await notify({chatId: CHAT_ID, body: action.msg});
       if (err) stack.push(action);
     }
     console.log(`Cron job execution. Time - ${time}`);

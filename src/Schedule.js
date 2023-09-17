@@ -3,33 +3,64 @@ class Schedule {
     if (this.instance) {
       return this;
     }
-    this.list = {};
+    this.events = [];
+    this.users = {};
     this.instance = this;
   }
 
-  add({time, msg}) {
-    if (!this.list[time]) {
-      this.list[time] = [];
+  add(data, userId) {
+    const events = [...this.events];
+    const users = [...this.users];
+
+    let id = data.id || `${Date.now()}`;
+    if (!data.id) {
+      events.push({id, usrs: [userId], ...data});
+    } else {
+      if (users[userId]?.includes(id)) {
+        throw new Error("User already has this event");
+      }
+      const eventId = events.findIndex(e => e.id === id);
+      events[eventId].usrs.push(userId);
     }
-    this.list[time].push({id: `${Date.now()}`, title: "Нагадування", msg});
-    console.log("event added");
+
+    users[userId] = this.users[userId] || [];
+    users[userId].push(id);
+
+    this.events = events;
+    this.users = users;
+
+    return id;
   }
 
-  remove(time, id) {
-    const itemIdx = this.list[time].findIndex(i => i.id === id);
-    this.list[time] = this.list[time].splice(itemIdx, 1);
+  remove(id, userId) {
+    const itemIdx = this.events.findIndex(i => i.id === id);
+    if (!this.users[userId].includes(id)) {
+      throw new Error("User doesn't have this event");
+    }
+    if (this.events[itemIdx].usrs.length > 1) {
+      this.events[itemIdx].usrs = this.events[itemIdx].usrs.filter(u => u !== userId);
+    } else {
+      this.events.splice(itemIdx, 1);
+    }
+    if (this.users[userId].length > 1) {
+      this.users[userId] = this.users[userId].filter(e => e !== id);
+    } else {
+      delete this.users[userId];
+    }
     console.log("event removed");
   }
 
-  getByTime(time) {
-    return this.list[time] || [];
+  getById(id) {
+    return this.events.find(e => e.id === id);
   }
 
-  getAll() {
-    return Object.entries(this.list).reduce((acc, [time, actions]) => {
-      acc.push({time, ...actions});
-      return acc;
-    }, []);
+  getByTime(time) {
+    return this.events.filter(e => e.time === time);
+  }
+
+  getByUser(userId) {
+    const ids = this.users[userId] || [];
+    return this.events.filter(e => ids.includes(e.id));
   }
 }
 

@@ -9,9 +9,14 @@ module.exports.ERROR_MESSAGES = {
 module.exports.BOT_COMMANDS = {
   LIST: "/list",
   ADD: "/add",
-  CANCEL_ADD_EVENT: "cancel-add-event",
+  EXIT: "exit-event",
+  NEW_EVENT: "add-new-event",
+  ADD_EVENT_BY_ID: "add-event-by-id",
+  CHANGE_TIME: "edit-event-time",
+  BACK: "back",
 };
 
 module.exports.SCENES = {
   ADD_EVENT: "add-event",
+  LIST_EVENT: "list-event",
 };
