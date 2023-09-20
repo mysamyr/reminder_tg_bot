@@ -1,22 +1,33 @@
+const {EVENT_STATUSES} = require("./constants");
+
 class Schedule {
   constructor() {
     if (this.instance) {
       return this;
     }
-    this.events = [];
-    this.users = {};
+    this.events = [
+      {
+        id: "12345",
+        usrs: [411266150],
+        time: "12:34",
+        msg: "TEST"
+      }
+    ];
+    this.users = {
+      411266150: [{id: "12345", status: EVENT_STATUSES.ACTIVE}]
+    };
     this.instance = this;
   }
 
   add(data, userId) {
     const events = [...this.events];
-    const users = [...this.users];
+    const users = {...this.users};
 
     let id = data.id || `${Date.now()}`;
     if (!data.id) {
       events.push({id, usrs: [userId], ...data});
     } else {
-      if (users[userId]?.includes(id)) {
+      if (users[userId]?.find(e => e.id === id)) {
         throw new Error("User already has this event");
       }
       const eventId = events.findIndex(e => e.id === id);
@@ -24,7 +35,7 @@ class Schedule {
     }
 
     users[userId] = this.users[userId] || [];
-    users[userId].push(id);
+    users[userId].push({id, status: EVENT_STATUSES.ACTIVE});
 
     this.events = events;
     this.users = users;
@@ -32,9 +43,13 @@ class Schedule {
     return id;
   }
 
-  remove(id, userId) {
-    const itemIdx = this.events.findIndex(i => i.id === id);
-    if (!this.users[userId].includes(id)) {
+  remove(userId, eventId) {
+    const itemIdx = this.events.findIndex(i => i.id === eventId);
+    const userIdx = this.users[userId].findIndex(i => i.id === eventId);
+    if (itemIdx < 0) {
+      throw new Error("Event doesn't exist");
+    }
+    if (userIdx < 0) {
       throw new Error("User doesn't have this event");
     }
     if (this.events[itemIdx].usrs.length > 1) {
@@ -43,11 +58,29 @@ class Schedule {
       this.events.splice(itemIdx, 1);
     }
     if (this.users[userId].length > 1) {
-      this.users[userId] = this.users[userId].filter(e => e !== id);
+      this.users[userId] = this.users[userId].filter(e => e !== eventId);
     } else {
       delete this.users[userId];
     }
-    console.log("event removed");
+  }
+
+  editTime(id, newTime) {
+    const idx = this.events.findIndex(e => e.id === id);
+    this.events[idx] = {...this.events[idx], time: newTime};
+    return this.events[idx];
+  }
+
+  editMsg(id, newMsg) {
+    const idx = this.events.findIndex(e => e.id === id);
+    this.events[idx] = {...this.events[idx], msg: newMsg};
+    return this.events[idx];
+  }
+
+  toggleStatus(userId, eventId) {
+    const idx = this.users[userId].findIndex(e => e.id === eventId);
+    const newStatus = this.users[userId][idx].status === EVENT_STATUSES.ACTIVE ? EVENT_STATUSES.INACTIVE : EVENT_STATUSES.ACTIVE;
+    this.users[userId][idx] = {...this.users[userId][idx], status: newStatus};
+    return newStatus;
   }
 
   getById(id) {
@@ -59,8 +92,17 @@ class Schedule {
   }
 
   getByUser(userId) {
-    const ids = this.users[userId] || [];
-    return this.events.filter(e => ids.includes(e.id));
+    const ids = this.users[userId] ? this.users[userId].map(e => e.id) : [];
+    return ids.length ? this.events.filter(e => ids.includes(e.id)) : [];
+  }
+
+  getByUserTime(userId, time) {
+    const ids = this.users[userId] ? this.users[userId].map(e => e.id) : [];
+    return ids.length ? this.events.filter(e => e.time === time && ids.includes(e.id)) : [];
+  }
+
+  getStatus(userId, eventId) {
+    return this.users[userId].find(e => e.id === eventId).status;
   }
 }
 

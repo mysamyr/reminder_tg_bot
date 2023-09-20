@@ -3,7 +3,7 @@ const {runCron} = require("./src/cron");
 
 (async () => {
   launchBot();
-  runCron();
+  // runCron();
 })();
 
 // notify({chatId: CHAT_ID, body: "Test message"}).then(res => console.log(res));

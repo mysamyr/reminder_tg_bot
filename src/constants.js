@@ -4,19 +4,29 @@ module.exports.CRONE_EXPRESSIONS = {
 
 module.exports.ERROR_MESSAGES = {
   REQUEST_FAILURE: "Request not sent",
+  NOT_VALID_TIME: "Not valid time",
+  EVENT_NOT_EXIST: "Event doesn't exist",
 };
 
 module.exports.BOT_COMMANDS = {
-  LIST: "/list",
-  ADD: "/add",
-  EXIT: "exit-event",
-  NEW_EVENT: "add-new-event",
-  ADD_EVENT_BY_ID: "add-event-by-id",
-  CHANGE_TIME: "edit-event-time",
-  BACK: "back",
+  LIST: "Your events",
+  ADD: "Add new event",
+  NEW_EVENT: "Add new",
+  ADD_EVENT_BY_ID: "Add existing",
+  CHANGE_TIME: "Change time",
+  CHANGE_MESSAGE: "Change message",
+  CHANGE_STATUS: "Change status",
+  DELETE_EVENT: "Delete event",
+  BACK: "Back",
+  EXIT: "Cancel",
 };
 
 module.exports.SCENES = {
-  ADD_EVENT: "add-event",
-  LIST_EVENT: "list-event",
+  LIST_EVENT: "list",
+  ADD_EVENT: "add",
+};
+
+module.exports.EVENT_STATUSES = {
+  ACTIVE: "active",
+  INACTIVE: "inactive",
 };
