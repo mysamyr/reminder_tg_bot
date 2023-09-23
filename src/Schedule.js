@@ -6,15 +6,15 @@ class Schedule {
       return this;
     }
     this.events = [
-      {
-        id: "12345",
-        usrs: [411266150],
-        time: "12:34",
-        msg: "TEST"
-      }
+      // {
+      //   id: `${Date.now()}`: string,
+      //   usrs: userId[]: number,
+      //   time: "12:34": string,
+      //   msg: "some text": string
+      // }
     ];
     this.users = {
-      411266150: [{id: "12345", status: EVENT_STATUSES.ACTIVE}]
+      // userId: number: [{id: eventId: string, status: EVENT_STATUSES.ACTIVE/INACTIVE}]
     };
     this.instance = this;
   }
@@ -25,7 +25,7 @@ class Schedule {
 
     let id = data.id || `${Date.now()}`;
     if (!data.id) {
-      events.push({id, usrs: [userId], ...data});
+      events.push({ ...data, id, usrs: [userId]});
     } else {
       if (users[userId]?.find(e => e.id === id)) {
         throw new Error("User already has this event");
@@ -83,12 +83,29 @@ class Schedule {
     return newStatus;
   }
 
+  unsubscribe(userId) {
+    if (this.users[userId]) {
+      this.users[userId] = this.users[userId].map(e => ({...e, status: EVENT_STATUSES.INACTIVE}));
+    }
+  }
+
   getById(id) {
     return this.events.find(e => e.id === id);
   }
 
   getByTime(time) {
-    return this.events.filter(e => e.time === time);
+    return this.events.reduce((acc, e) => {
+      if (e.time !== time) return acc;
+      const subscribedUsers = e.usrs.filter(u =>
+        this.users[u].find(i => i.id === e.id && i.status === EVENT_STATUSES.ACTIVE));
+      if (subscribedUsers.length) {
+        acc.push({
+          ...e,
+          usrs: subscribedUsers,
+        });
+      }
+      return acc;
+    }, []);
   }
 
   getByUser(userId) {
@@ -102,7 +119,7 @@ class Schedule {
   }
 
   getStatus(userId, eventId) {
-    return this.users[userId].find(e => e.id === eventId).status;
+    return this.users[userId].find(e => e.id === eventId)?.status;
   }
 }
 

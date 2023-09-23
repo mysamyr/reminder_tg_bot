@@ -3,11 +3,12 @@ const {
   Scenes,
   session,
 } = require("telegraf");
-const {message} = require("telegraf/filters");
+// const {message} = require("telegraf/filters");
 const {BOT_COMMANDS, SCENES} = require("../constants");
-const {addEventWiz, listEventWiz} = require("./scenes");
-const {BOT_TOKEN} = require("../../config");
 const {renderMenu} = require("./scenes/common");
+const {addEventWiz, listEventWiz} = require("./scenes");
+const schedule = require("../Schedule");
+const {BOT_TOKEN} = require("../../config");
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -23,16 +24,20 @@ module.exports.launchBot = async () => {
   bot.use(session());
   bot.use(stage.middleware());
 
-  // todo react all scenes to global commands (/start, /stop)
+  // todo react all scenes to global commands (/start, /stop) ?
 
   bot.hears(BOT_COMMANDS.ADD, async (ctx) => ctx.scene.enter(SCENES.ADD_EVENT));
   bot.hears(BOT_COMMANDS.LIST, async (ctx) => ctx.scene.enter(SCENES.LIST_EVENT));
 
   bot.start((ctx) => renderMenu(ctx));
-  bot.command("stop", (ctx) => ctx.reply("You have been unsubscribed from all notifications"));
   bot.help((ctx) => ctx.reply("Send /add to add new notification\nSend /list to show your current notifications"));
-  bot.on(message("sticker"), (ctx) => ctx.reply("👍"));
-  bot.hears("hi", (ctx) => ctx.reply("Hey there"));
+  bot.command("stop", (ctx) => {
+    console.log(ctx.scene);
+    schedule.unsubscribe(ctx.update.message.from.id);
+    ctx.reply("You have been unsubscribed from all notifications")
+  });
+  // bot.on(message("sticker"), (ctx) => ctx.reply("👍"));
+  // bot.hears("hi", (ctx) => ctx.reply("Hey there"));
 
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
